@@ -17,79 +17,82 @@ sub make_materials {
 
 sub make_test_geo {
 
-    my $slab_side = 150.;      # 3x3 meters slabs
-    my $slabs_separation = 200.; # 200 cm
-    my $slab1_zpos = 50.;
-    my $slab2_zpos = $slab1_zpos + $slabs_separation;
-    my $slabs_thickness = 3;
-    my $flux_thickness = 0.1;
-    my $flux1_zpos = $slab1_zpos + $slabs_thickness + 5*$flux_thickness;
-    my $flux2_zpos = $slab2_zpos + $slabs_thickness + 5*$flux_thickness;
+    my $slab_side = 22.8;      # 228.16 meters slabs
+    my $lead_side = 22.8;
 
-    my %detector = init_det();
+    my $lead_thickness = 0.5/2; # This is semi-length
+    my $gap = .5; # micrometer
+    my $slabs_thickness1 = 0.5/2; # This is semi-length
+    my $slabs_thickness2 = 0.6/2;
+    my $slabs_difference = 0.1/2;
 
-    $detector{"name"} = "slab1";
-    $detector{"mother"} = "root";
-    $detector{"description"} = "slab1 scintillator";
-    $detector{"color"} = "ff0000";
-    $detector{"style"} = 1;
-    $detector{"visible"} = 1;
-    $detector{"type"} = "Box";
-    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $slabs_thickness*cm";
-    $detector{"material"} = "scintillator";
-    $detector{"pos"} = "0*mm 0*mm $slab1_zpos*cm";
-    $detector{"sensitivity"} = "flux";
-    $detector{"hit_type"} = "flux";
-    $detector{"identifiers"} = "id manual 10";
-    print_det(\%configuration, \%detector);
+    my @parts = (1..21);
 
-    %detector = init_det();
-    $detector{"name"} = "slab2";
-    $detector{"mother"} = "root";
-    $detector{"description"} = "slab2 scintillator";
-    $detector{"color"} = "ff0000";
-    $detector{"style"} = 1;
-    $detector{"visible"} = 1;
-    $detector{"type"} = "Box";
-    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $slabs_thickness*cm";
-    $detector{"material"} = "scintillator";
-    $detector{"pos"} = "0*mm 0*mm $slab2_zpos*cm";
-    $detector{"sensitivity"} = "flux";
-    $detector{"hit_type"} = "flux";
-    $detector{"identifiers"} = "id manual 20";
-    print_det(\%configuration, \%detector);
+    for(@parts) {
+        my %detector = init_det();
 
-    %detector = init_det();
-    $detector{"name"} = "slab1_flux";
-    $detector{"mother"} = "root";
-    $detector{"description"} = "Slub1 Flux Detector";
-    $detector{"color"} = "ff80002";
-    $detector{"style"} = 1;
-    $detector{"visible"} = 1;
-    $detector{"type"} = "Box";
-    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $flux_thickness*cm";
-    $detector{"material"} = "G4_Galactic";
-    $detector{"pos"} = "0*mm 0*mm $flux1_zpos*cm";
-    $detector{"sensitivity"} = "flux";
-    $detector{"hit_type"} = "flux";
-    $detector{"identifiers"} = "id manual 1";
-    print_det(\%configuration, \%detector);
+        my $slabs_thickness = $slabs_thickness1 if ($_ != 1 && $_ != 21);
+        $slabs_thickness = $slabs_thickness2 if ($_ == 1 || $_ == 21);
 
-        %detector = init_det();
-    $detector{"name"} = "slab2_flux";
-    $detector{"mother"} = "root";
-    $detector{"description"} = "Slub2 Flux Detector";
-    $detector{"color"} = "ff80002";
-    $detector{"style"} = 1;
-    $detector{"visible"} = 1;
-    $detector{"type"} = "Box";
-    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $flux_thickness*cm";
-    $detector{"material"} = "G4_Galactic";
-    $detector{"pos"} = "0*mm 0*mm $flux2_zpos*cm";
-    $detector{"sensitivity"} = "flux";
-    $detector{"hit_type"} = "flux";
-    $detector{"identifiers"} = "id manual 2";
-    print_det(\%configuration, \%detector);
+
+        my $slab_zpos = $_*($slabs_thickness + $gap + $lead_thickness);
+        #Special cases
+        $slab_zpos = $_*($slabs_thickness + $gap + $lead_thickness) + $slabs_difference if ($_ == 1);
+        $slab_zpos -= ($lead_thickness + $gap) if ($_ == 21);
+
+        #$slab_zpos = $_*($slabs_thickness2  + $gap + $lead_thickness) if ($_ == 1 || $_ == 21); # 0.05 difference
+
+        my $lead_zpos = $slab_zpos + $gap;
+        #$lead_zpos = $slab_zpos + $gap if ($_ == 1);
+
+        $detector{"name"} = "slab$_";
+        $detector{"mother"} = "root";
+        $detector{"description"} = "Slab$_ scintillator";
+        $detector{"color"} = "f27a9d";
+        $detector{"style"} = 1;
+        $detector{"visible"} = 1;
+        $detector{"type"} = "Box";
+        $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $slabs_thickness*cm";
+        $detector{"material"} = "scintillator";
+        $detector{"pos"} = "0*mm 0*mm $slab_zpos*cm";
+        $detector{"sensitivity"} = "flux";
+        $detector{"hit_type"} = "flux";
+        #$detector{"identifiers"} = "id manual s$_"; # Comment for now, remove comment later
+        print_det(\%configuration, \%detector);
+
+#         %detector = init_det();
+#         $detector{"name"} = "flux$_";
+#         $detector{"mother"} = "root";
+#         $detector{"description"} = "Slab$_ Flux Detector";
+#         $detector{"color"} = "ed1845";
+#         $detector{"style"} = 1;
+#         $detector{"visible"} = 1;
+#         $detector{"type"} = "Box";
+#         $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $flux_thickness*cm";
+#         $detector{"material"} = "G4_Galactic";
+#         $detector{"pos"} = "0*mm 0*mm $flux_zpos*cm";
+#         $detector{"sensitivity"} = "flux";
+#         $detector{"hit_type"} = "flux";
+#         #$detector{"identifiers"} = "id manual f$_";
+#         print_det(\%configuration, \%detector);
+
+        if($_ != 21) {
+            %detector = init_det();
+            $detector{"name"} = "lead$_";
+            $detector{"mother"} = "root";
+            $detector{"description"} = "Lead$_ block";
+            $detector{"color"} = "00a552";
+            $detector{"style"} = 1;
+            $detector{"visible"} = 1;
+            $detector{"type"} = "Box";
+            $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $lead_thickness*cm";
+            $detector{"material"} = "G4_Pb";
+            $detector{"pos"} = "0*mm 0*mm $lead_zpos*cm";
+
+            print_det(\%configuration, \%detector);
+        }
+
+    }
 }
 
 1;
