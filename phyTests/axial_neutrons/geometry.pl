@@ -28,18 +28,34 @@ sub make_test_geo {
 
     my $lead_thickness = 0.5/2; # This is semi-length
 
+    my $fp_thickness = 1.5; # 15 mm
+    my %detector = init_det();
+    $detector{"name"} = "front_plane";
+    $detector{"mother"} = "root";
+    $detector{"description"} = "Front plate";
+    $detector{"color"} = "2986cc";
+    $detector{"style"} = 1;
+    $detector{"visible"} = 1;
+    $detector{"type"} = "Box";
+    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $fp_thickness*cm";
+    $detector{"material"} = "G4_Al";
+    $detector{"pos"} = "0*mm 0*mm 0*cm";
+    $detector{"identifiers"} = "fp1"; # Comment for now, remove comment later
+    print_det(\%configuration, \%detector);
+
+
     my $gap = .3; # micrometer
-    my $slab_zpos = 0;  # Initial slab z-pos
-    my $lead_zpos = $slabs_thickness2 + $gap; # Initial lead z-pos
+    my $slab_zpos = $fp_thickness + $gap;  # Initial slab z-pos
+    my $lead_zpos = $slab_zpos + $slabs_thickness2 + $gap; # Initial lead z-pos
 
     my @parts = (1..21);
 
     for(@parts) {
-        my %detector = init_det();
 
         my $slabs_thickness = $slabs_thickness2 if ($_ == 1 || $_ == 2);
         $slabs_thickness = $slabs_thickness1 if ($_ != 1 && $_ != 2);
 
+        %detector = init_det();
         $detector{"name"} = "slab$_";
         $detector{"mother"} = "root";
         $detector{"description"} = "Slab$_ scintillator";
@@ -97,6 +113,23 @@ sub make_test_geo {
         $lead_zpos = $slab_zpos + $gap + $lead_thickness;
 
     }
+
+    my $bp_thickness = 4; # 40 mm
+    my $bp_zpos = $slab_zpos + $bp_thickness - ($gap + $lead_thickness + $slabs_thickness1);
+    %detector = init_det();
+    $detector{"name"} = "back_plane";
+    $detector{"mother"} = "root";
+    $detector{"description"} = "Backplane";
+    $detector{"color"} = "2986cc";
+    $detector{"style"} = 1;
+    $detector{"visible"} = 1;
+    $detector{"type"} = "Box";
+    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $bp_thickness*cm";
+    $detector{"material"} = "G4_Al";
+    $detector{"pos"} = "0*mm 0*mm $bp_zpos*cm";
+    $detector{"identifiers"} = "bp1"; # Comment for now, remove comment later
+    print_det(\%configuration, \%detector);
+
 }
 
 1;
