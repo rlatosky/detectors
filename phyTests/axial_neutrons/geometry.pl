@@ -52,7 +52,7 @@ sub make_test_geo {
         $detector{"pos"} = "0*mm 0*mm $slab_zpos*cm";
         $detector{"sensitivity"} = "flux";
         $detector{"hit_type"} = "flux";
-        #$detector{"identifiers"} = "id manual s$_"; # Comment for now, remove comment later
+        $detector{"identifiers"} = "s$_"; # Comment for now, remove comment later
         print_det(\%configuration, \%detector);
 
 #         %detector = init_det();
