@@ -17,33 +17,28 @@ sub make_materials {
 
 sub make_test_geo {
 
-    my $slab_side = 22.8;      # 228.16 meters slabs
+    my $slab_side = 22.816;
+    my $slab_width = 22.816;      # 228.16 mm wide slabs
+
     my $lead_side = 22.8;
 
-    my $lead_thickness = 0.5/2; # This is semi-length
-    my $gap = .5; # micrometer
     my $slabs_thickness1 = 0.5/2; # This is semi-length
     my $slabs_thickness2 = 0.6/2;
     my $slabs_difference = 0.1/2;
+
+    my $lead_thickness = 0.5/2; # This is semi-length
+
+    my $gap = .3; # micrometer
+    my $slab_zpos = 0;  # Initial slab z-pos
+    my $lead_zpos = $slabs_thickness2 + $gap; # Initial lead z-pos
 
     my @parts = (1..21);
 
     for(@parts) {
         my %detector = init_det();
 
-        my $slabs_thickness = $slabs_thickness1 if ($_ != 1 && $_ != 21);
-        $slabs_thickness = $slabs_thickness2 if ($_ == 1 || $_ == 21);
-
-
-        my $slab_zpos = $_*($slabs_thickness + $gap + $lead_thickness);
-        #Special cases
-        $slab_zpos = $_*($slabs_thickness + $gap + $lead_thickness) + $slabs_difference if ($_ == 1);
-        $slab_zpos -= ($lead_thickness + $gap) if ($_ == 21);
-
-        #$slab_zpos = $_*($slabs_thickness2  + $gap + $lead_thickness) if ($_ == 1 || $_ == 21); # 0.05 difference
-
-        my $lead_zpos = $slab_zpos + $gap;
-        #$lead_zpos = $slab_zpos + $gap if ($_ == 1);
+        my $slabs_thickness = $slabs_thickness2 if ($_ == 1 || $_ == 2);
+        $slabs_thickness = $slabs_thickness1 if ($_ != 1 && $_ != 2);
 
         $detector{"name"} = "slab$_";
         $detector{"mother"} = "root";
@@ -91,6 +86,15 @@ sub make_test_geo {
 
             print_det(\%configuration, \%detector);
         }
+
+        $slab_zpos += ($lead_zpos - $slab_zpos) + $gap + $slabs_thickness;
+        $slab_width += 1.88; # increase width by 18.8 mm each time
+        #Special cases
+        #$slab_zpos -= ($lead_thickness + $gap) if ($_ == 21);
+
+        #$slab_zpos = $_*($slabs_thickness2  + $gap + $lead_thickness) if ($_ == 1 || $_ == 21); # 0.05 difference
+
+        $lead_zpos = $slab_zpos + $gap + $lead_thickness;
 
     }
 }
