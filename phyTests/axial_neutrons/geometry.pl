@@ -28,7 +28,7 @@ sub make_test_geo {
 
     my $lead_thickness = 0.5/2; # This is semi-length
 
-    my $fp_thickness = 1.5; # 15 mm
+    my $fp_thickness = 1.5/2; # 15 mm - This is semi-length
     my %detector = init_det();
     $detector{"name"} = "front_plane";
     $detector{"mother"} = "root";
@@ -68,7 +68,7 @@ sub make_test_geo {
         $detector{"pos"} = "0*mm 0*mm $slab_zpos*cm";
         $detector{"sensitivity"} = "flux";
         $detector{"hit_type"} = "flux";
-        $detector{"identifiers"} = "s$_"; # Comment for now, remove comment later
+        $detector{"identifiers"} = "slab$_"; # Comment for now, remove comment later
         print_det(\%configuration, \%detector);
 
 #         %detector = init_det();
@@ -114,7 +114,7 @@ sub make_test_geo {
 
     }
 
-    my $bp_thickness = 4; # 40 mm
+    my $bp_thickness = 4/2; # 40 mm
     my $bp_zpos = $slab_zpos + $bp_thickness - ($gap + $lead_thickness + $slabs_thickness1);
     %detector = init_det();
     $detector{"name"} = "back_plane";

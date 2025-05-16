@@ -11,6 +11,7 @@
 #include <TMath.h>
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -73,15 +74,48 @@ int main(int argc, char** argv) {
 
 			double Edep_slab1 = 0;
 			double Edep_slab2 = 0;
+			vector<double> Edep_slab;
+			vector<double> zpos;
+			int numOfSlabs = 21;
+			int gap = 3;
+
+			int leadThickness = 5; // mm
+			int slab1Thickness = 6;
+			int slab2Thickness = 5;
+
+			Edep_slab.push_back(0);
+			zpos.push_back(15); // zposition of slab 1
 			for (int ip = 0; ip < nPart; ip++) {
 				double avgZ = bMCTrue.getFloat("avgZ", ip);
 				double Edep = double(bMCTrue.getFloat("totEdep", ip));
 
-				// in slab1
-				if (avgZ < zpos1 - 4) { Edep_slab1 += Edep; }
-				// in slab2
-				if (avgZ > zpos1 + 4 && avgZ < zpos2 - 4) { Edep_slab2 += Edep; }
+				// iterate through zpos and edep_slab arrays
+				for (int n = 1; n < numOfSlabs; n++) {
+					// create zpos
+					if (n == 1 || n == 2) {
+						Edep_slab.push_back(0);
+						zpos.push_back(zpos[n-1] + gap + slab1Thickness + gap + leadThickness + gap);
+						//cout << "Zpos: " << zpos[n] << endl;
+						//cout << "Edep_slab: " << Edep_slab[n] << endl;
+						if (avgZ < zpos[n] - slab1Thickness) { Edep_slab[n] += Edep; }
+						
+					} else {
+						Edep_slab.push_back(0);
+						zpos.push_back(zpos[n-1] + gap + leadThickness + gap + slab2Thickness);
+						//cout << "Zpos: " << zpos[n] << endl;
+						//cout << "Edep_slab: " << Edep_slab[n] << endl;
+						if (avgZ < zpos[n] - slab2Thickness) { Edep_slab[n] += Edep; }
+					}
+				}
+				// cout << "Edep: " << Edep << endl;
+				// cout << "avgZ: " << avgZ << endl;
+				// // in slab1
+				// if (avgZ < zpos1 - 4) { Edep_slab1 += Edep; }
+				// // in slab2
+				// if (avgZ > zpos1 + 4 && avgZ < zpos2 - 4) { Edep_slab2 += Edep; }
 			}
+
+
 
 			for (int ip = 0; ip < nPart; ip++) {
 				int pid = bMCTrue.getInt("pid", ip);
@@ -100,19 +134,20 @@ int main(int argc, char** argv) {
 					double E = double(bMCTrue.getFloat("trackE", ip));
 
 					// in flux dets
-					// if avgZ is within zpos1 plus or minus 1 mm, fill h_npos1
-					if (fabs(avgZ - zpos1) < 2.0) { h_npos1.Fill(avgX, avgY); }
-					if (fabs(avgZ - zpos2) < 2.0) {
-						h_edep1.Fill(Edep_slab1);
+					// if avgZ is within zpos1 plus or minus gap (in mm), fill h_npos1
+					//cout << "avgZ: " << avgZ << endl;
+					if (fabs(avgZ - zpos[0]) < 5) { h_npos1.Fill(avgX, avgY); }
+					if (fabs(avgZ - zpos[1]) < 5) {
+						h_edep1.Fill(Edep_slab[0]);
 
-						if (Edep_slab1 > ene_cut) {
+						if (Edep_slab[0] > ene_cut) {
 							h_npos2.Fill(avgX, avgY);
-							h_edep1_c.Fill(Edep_slab1);
+							h_edep1_c.Fill(Edep_slab[0]);
 
 							// calculate the theta angle between the position on slab2 and slab1
 							double dX       = avgX;
 							double dY       = avgY;
-							double dZ       = avgZ - zpos1;
+							double dZ       = avgZ - zpos[0];
 							double R        = sqrt(dX * dX + dY * dY + dZ * dZ);
 							double costheta = dZ / R;
 							double theta    = acos(costheta) * r2d;
@@ -126,13 +161,14 @@ int main(int argc, char** argv) {
 								if (beta > 0.6) {
 									h_beta_c.Fill(beta);
 
-								if (dY > 0) {
-									h_theta.Fill(theta);
-									h_beta_theta.Fill(theta, beta);
-								}
-								else {
-									h_theta.Fill(-theta);
-									h_beta_theta.Fill(-theta, beta);
+									if (dY > 0) {
+										h_theta.Fill(theta);
+										h_beta_theta.Fill(theta, beta);
+									}
+									else {
+										h_theta.Fill(-theta);
+										h_beta_theta.Fill(-theta, beta);
+									}
 								}
 							}
 						}
@@ -141,41 +177,12 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-}
+	catch (const char msg)
+	{ 
+		cerr << msg << endl; 
+	}
 
-catch
-(
-const char msg
-)
- { cerr << msg << endl; }
-
-cout
-<<
-" Ration of Edep_slab1/Edep = "
-<<
-100
-*
-h_edep1_c
-.
-Integral (
-0
-,
-300
-)
-/
-h_edep1
-.
-Integral (
-0
-,
-300
-)
-<<
-endl;
-
-gDirectory
-->
-Write();
-return
-0;
+	cout << " Ration of Edep_slab1/Edep = " << 100*h_edep1_c.Integral(0,300)/h_edep1.Integral(0,300) << endl;
+	gDirectory->Write();
+	return 0;
 }
