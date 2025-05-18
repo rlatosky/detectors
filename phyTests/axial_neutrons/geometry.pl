@@ -40,7 +40,7 @@ sub make_test_geo {
     $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $fp_thickness*cm";
     $detector{"material"} = "G4_Al";
     $detector{"pos"} = "0*mm 0*mm 0*cm";
-    $detector{"identifiers"} = "fp1"; # Comment for now, remove comment later
+    #$detector{"identifiers"} = "fp1"; # Comment for now, remove comment later
     print_det(\%configuration, \%detector);
 
 
@@ -127,7 +127,7 @@ sub make_test_geo {
     $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $bp_thickness*cm";
     $detector{"material"} = "G4_Al";
     $detector{"pos"} = "0*mm 0*mm $bp_zpos*cm";
-    $detector{"identifiers"} = "bp1"; # Comment for now, remove comment later
+    #$detector{"identifiers"} = "bp1"; # Comment for now, remove comment later
     print_det(\%configuration, \%detector);
 
 }
