@@ -4,6 +4,15 @@ This is a test of Neutrons dispersion after two slabs of scintillator material.
 This will be developed to match the STAR Barrel EM Calorimeter.
 (referenced in: Nuclear Instruments and Methods in Physics Research A 499 (2003) 725–739)
 
+## Setup Containers
+VNC gemc viewer: 
+```
+podman run --platform linux/amd64 -it --rm -v ~/Documents/AVFFResearch/detectors:/usr/local/mywork:z -p 8080:8080 jeffersonlab/gemc:dev-fedora36
+```
+Terminal gemc:
+```
+podman run --platform linux/amd64 -it --rm -v ~/Documents/AVFFResearch/detectors:/usr/local/mywork:z jeffersonlab/gemc:dev-fedora36 bash
+```
 
 ## Geometry
 
