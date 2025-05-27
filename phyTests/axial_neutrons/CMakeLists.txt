@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Project name
-project(neutrons)
+project(analysis)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -17,7 +17,7 @@ include_directories(${ROOT_INCLUDE_DIRS})
 include_directories($ENV{HIPO}/include/hipo4)
 
 # Add executable
-add_executable(neutrons neutrons.cc)
+add_executable(analysis analysis.cc)
 
 # Link libraries
-target_link_libraries(neutrons ${ROOT_LIBRARIES} -L/opt/homebrew/lib/ -L$ENV{HIPO}/lib -lhipo4 -llz4)
+target_link_libraries(analysis ${ROOT_LIBRARIES} -L/opt/homebrew/lib/ -L$ENV{HIPO}/lib -lhipo4 -llz4)
