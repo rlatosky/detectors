@@ -87,13 +87,25 @@ int main(int argc, char** argv) {
 	hTotEdepTitlestr += argv[2];
 	hTotEdepTitlestr += " E_dep - ";
 	hTotEdepTitlestr += argv[3];
-	hTotEdepTitlestr += " KE";
+	hTotEdepTitlestr += " MeV";
 	const char * hTotEdepTitle = hTotEdepTitlestr.c_str();
 	const int numOfHistBins = atoi(argv[4]);
 	const int maxHistNum = atoi(argv[5]);
 	TH1D h_totedep("h_totedep", hTotEdepTitle, numOfHistBins, 0, maxHistNum);
+
 	h_totedep.GetXaxis()->SetTitle("E_dep (MeV)");
 	h_totedep.GetYaxis()->SetTitle("Events");
+
+	std::string hEffEdepTitlestr = "Total ";
+	hEffEdepTitlestr += argv[2];
+	hEffEdepTitlestr += " E_dep - ";
+	hEffEdepTitlestr += argv[3];
+	hEffEdepTitlestr += " MeV";
+	const char * hEffEdepTitle = hEffEdepTitlestr.c_str();
+	TH1D h_effedep("h_effedep", hEffEdepTitle, numOfHistBins, 0, maxHistNum);
+
+	h_effedep.GetXaxis()->SetTitle("E_dep (MeV)");
+	h_effedep.GetYaxis()->SetTitle("Events (with cut)");
 
 	TGraph g_avgTvsAvgZ(10000);
 	g_avgTvsAvgZ.SetTitle("AvgT vs AvgZ; avgT; avgZ");
@@ -111,12 +123,13 @@ int main(int argc, char** argv) {
 
 			// Get total number of Edep per event
 			float edep_sum;
+			float eff_edep_sum;
+			float e_threshold = 100;
 			//cout << size(bMCTrue.getFloat("totEdep")) << endl;
 			for (auto i: bMCTrue.getFloat("totEdep")) {
 				int mpid = bMCTrue.getInt("mpid")[i];
 				int pid = bMCTrue.getInt("pid")[i];
 				edep_sum += i; // uncomment if you want all secondaries
-
 //				// Let's filter out the particles
 //				if (pid == proton_ID && M == PROTONMASS) { //proton
 //					//cout << "Particle ID:" << pid << endl;
@@ -129,9 +142,14 @@ int main(int argc, char** argv) {
 //					edep_sum +=i;
 //				}
 			}
-
+			int eff_events = 0;
+			if (edep_sum > e_threshold) {
+				eff_events += 1; // one event that reached threshold
+				h_effedep.Fill(edep_sum);
+			}
 			h_totedep.Fill(edep_sum);
 			edep_sum = 0;
+			eff_edep_sum = 0;
 
 //			float avgT_sum;
 //			float avgZ_sum;
@@ -148,7 +166,7 @@ int main(int argc, char** argv) {
 //				} else if (pid == electron_ID && M == ELECTRONMASS) {
 //					avgT_sum +=i;
 //				} else if (pid == positron_ID && M == ELECTRONMASS) {
-//                    avgT_sum += i;                
+//                    avgT_sum += i;
 //                }
 //			}
 //			g_avgTvsAvgZ.AddPoint(avgT_sum, avgZ_sum);
@@ -178,8 +196,8 @@ int main(int argc, char** argv) {
 				// iterate through zpos and edep_slab arrays
 				for (int n = 1; n < numOfSlabs; n++) {
                     if (identifier == n) {
-                        total_edep_layer[n] += Edep;                    
-                    }                    
+                        total_edep_layer[n] += Edep;
+                    }
 //					// create zpos
 //					if (n == 1 || n == 2) {
 //						Edep_slab.push_back(0);
@@ -207,8 +225,8 @@ int main(int argc, char** argv) {
 		}
 	}
 	catch (const char msg)
-	{ 
-		cerr << msg << endl; 
+	{
+		cerr << msg << endl;
 	}
 	//tree->Branch("h_totedep", &h_totedep, 32000, 0);
 	gDirectory->Write();

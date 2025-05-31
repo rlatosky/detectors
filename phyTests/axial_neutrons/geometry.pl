@@ -17,6 +17,7 @@ sub make_materials {
 
 sub make_test_geo {
 
+    my $gap = 0.3; # mm
     my $slab_side = 22.816;
     my $slab_width = 22.816;      # 228.16 mm wide slabs
 
@@ -28,8 +29,24 @@ sub make_test_geo {
 
     my $lead_thickness = 0.5/2; # This is semi-length
 
-    my $fp_thickness = 1.5/2; # 15 mm - This is semi-length
+    my $flead_thickness = 5/2; # 50 mm - This is semi-length
     my %detector = init_det();
+    $detector{"name"} = "front_lead_block";
+    $detector{"mother"} = "root";
+    $detector{"description"} = "Front lead block";
+    $detector{"color"} = "aa0000";
+    $detector{"style"} = 1;
+    $detector{"visible"} = 1;
+    $detector{"type"} = "Box";
+    $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $flead_thickness*cm";
+    $detector{"material"} = "G4_Pb";
+    $detector{"pos"} = "0*mm 0*mm 0*cm";
+    #$detector{"identifiers"} = "fp1"; # Comment for now, remove comment later
+    print_det(\%configuration, \%detector);
+
+    my $fp_thickness = 1.5/2; # 15 mm - This is semi-length
+    my $fp_pos = $flead_thickness + $gap + $fp_thickness;
+    %detector = init_det();
     $detector{"name"} = "front_plane";
     $detector{"mother"} = "root";
     $detector{"description"} = "Front plate";
@@ -39,13 +56,12 @@ sub make_test_geo {
     $detector{"type"} = "Box";
     $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $fp_thickness*cm";
     $detector{"material"} = "G4_Al";
-    $detector{"pos"} = "0*mm 0*mm 0*cm";
+    $detector{"pos"} = "0*mm 0*mm $fp_pos*cm";
     #$detector{"identifiers"} = "fp1"; # Comment for now, remove comment later
     print_det(\%configuration, \%detector);
 
 
-    my $gap = .3; # micrometer
-    my $slab_zpos = $fp_thickness + $gap;  # Initial slab z-pos
+    my $slab_zpos = $fp_pos + $fp_thickness + $gap;  # Initial slab z-pos
     my $lead_zpos = $slab_zpos + $slabs_thickness2 + $gap; # Initial lead z-pos
 
     my @parts = (1..21);
@@ -133,5 +149,3 @@ sub make_test_geo {
 }
 
 1;
-
-
