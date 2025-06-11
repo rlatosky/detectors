@@ -7,11 +7,11 @@ This will be developed to match the STAR Barrel EM Calorimeter.
 ## Setup Containers
 VNC gemc viewer: 
 ```
-podman run --platform linux/amd64 -it --rm -v ~/Documents/AVFFResearch/detectors:/usr/local/mywork:z -p 8080:8080 jeffersonlab/gemc:dev-fedora36
+podman run --platform linux/amd64 -it --rm -v ~/detectors/phyTests/axial_neutrons:/usr/local/mywork:z -p 8080:8080 jeffersonlab/gemc:dev-fedora36
 ```
 Terminal gemc:
 ```
-podman run --platform linux/amd64 -it --rm -v ~/Documents/AVFFResearch/detectors:/usr/local/mywork:z jeffersonlab/gemc:dev-fedora36 bash
+podman run --platform linux/amd64 -it --rm -v ~/detectors/phyTests/axial_neutrons:/usr/local/mywork:z jeffersonlab/gemc:dev-fedora36 bash
 ```
 
 ## Geometry
