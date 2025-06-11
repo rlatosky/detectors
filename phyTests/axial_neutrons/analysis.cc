@@ -58,9 +58,6 @@ int main(int argc, char** argv) {
 	hipo::bank bMCTrue(factory.getSchema("MC::True"));
 	hipo::bank fluxADC(factory.getSchema("FLUX::adc"));	// get flux entry
 
-	// Initialize graphs
-    TGraph g_efficiency(0);
-
 	// Graph and filename options
 	const char* file_ext = ".root";
 	const char* hist_x_label = "E_dep (MeV)";
@@ -68,8 +65,10 @@ int main(int argc, char** argv) {
 	const char* hist_eff_y_label = "Events (with energy cut)";
 	const char* hist_totedep_name = "h_totedep";
 	const char* hist_eff_name = "h_effedep";
+    const char* hist_bstotedep_name = "h_bstotedep";
 
 	const char* eff_graph_name = "efficiency";
+	const char* bseff_graph_name = "bsefficiency";
 	std::string eff_graph_title_str = particle;
 	eff_graph_title_str += " - Threshold vs. Efficiency - ";
 	eff_graph_title_str += filename_woext;
@@ -81,12 +80,34 @@ int main(int argc, char** argv) {
 	h_edep_title_str += filename_woext;
 	const char* h_edep_title = h_edep_title_str.c_str();
 
+	std::string h_bsedep_title_str = particle;
+	h_bsedep_title_str += " E_dep of Scintillator Block ";
+	h_bsedep_title_str += filename_woext;
+	const char* h_bsedep_title = h_bsedep_title_str.c_str();
+
 	// Setup filename for .root file
 	std::string file_save_str = filename_woext;
 	file_save_str += file_ext;
 	const char* file_save = file_save_str.c_str();
 	auto file_out = new TFile(file_save, "Recreate");
 	auto tree = new TTree(file_save,"Tree");
+
+	// Set up histograms
+	TH1D h_totedep(hist_totedep_name, h_edep_title, hist_bins_and_xlim, 0, hist_bins_and_xlim);
+	TH1D h_effedep(hist_eff_name, h_edep_title, hist_bins_and_xlim, 0, hist_bins_and_xlim);
+    TH1D h_bstotedep(hist_bstotedep_name, h_bsedep_title, hist_bins_and_xlim, 0, hist_bins_and_xlim);
+
+	// Set up histogram axes titles
+	h_totedep.GetXaxis()->SetTitle(hist_x_label);
+	h_totedep.GetYaxis()->SetTitle(hist_y_label);
+	h_bstotedep.GetXaxis()->SetTitle(hist_x_label);
+	h_bstotedep.GetYaxis()->SetTitle(hist_y_label);
+	h_effedep.GetXaxis()->SetTitle(hist_x_label);
+	h_effedep.GetYaxis()->SetTitle(hist_eff_y_label);
+
+	// Initialize graphs
+    TGraph g_efficiency(0);
+    TGraph g_bsefficiency(0);
 
 	double M;
 	switch (char(particle[0])) {
@@ -113,15 +134,7 @@ int main(int argc, char** argv) {
 			break;
 	}
 
-	// Set up histograms
-	TH1D h_totedep(hist_totedep_name, h_edep_title, hist_bins_and_xlim, 0, hist_bins_and_xlim);
-	TH1D h_effedep(hist_eff_name, h_edep_title, hist_bins_and_xlim, 0, hist_bins_and_xlim);
 
-	// Set up histogram axes titles
-	h_totedep.GetXaxis()->SetTitle(hist_x_label);
-	h_totedep.GetYaxis()->SetTitle(hist_y_label);
-	h_effedep.GetXaxis()->SetTitle(hist_x_label);
-	h_effedep.GetYaxis()->SetTitle(hist_eff_y_label);
 
 	// The reason for kin_energy + 1 is due to us including 0
 	double eff_values[kin_energy+1];
@@ -178,23 +191,29 @@ int main(int argc, char** argv) {
 			// Clear edep_sum for next event
 			edep_sum = 0;
 
-			const int numOfSlabs = 21;
+			const int numOfSlabs = 22;
+			double total_edep_layer[numOfSlabs];
 
 			for (int ip = 0; ip < nPart; ip++) {
 
 				double avgZ = bMCTrue.getFloat("avgZ", ip);
-				double Edep = double(bMCTrue.getFloat("totEdep", ip));
+				double totEdep = double(bMCTrue.getFloat("totEdep", ip));
 				double identifier = int(fluxADC.getInt("component", ip)); // ID of scintillator
 
-				double total_edep_layer[numOfSlabs];
 				// Iterate through zpos and edep_slab arrays
-				for (int n = 1; n < numOfSlabs; n++) {
+				for (int n = 1; n <= numOfSlabs; n++) {
 					if (identifier == n) {
-						total_edep_layer[n] += Edep; // Get total Edep for layer n
+						total_edep_layer[n-1] += totEdep; // Get total Edep for layer n
 					}
 				}
 
 			}
+            // Get total_edep from layer 22 and fill histogram
+            h_bstotedep.Fill(total_edep_layer[21]);
+
+            total_edep_layer[21] = 0;
+
+
 
 		}
 	}
@@ -224,12 +243,21 @@ int main(int argc, char** argv) {
 	cout << tot_events_detected << endl;
 
 	g_efficiency.SetTitle(eff_graph_title);
+	g_bsefficiency.SetTitle(eff_graph_title);
 	//Optional: g_efficiency.Fit("gaus");
+
+    TH1*h_bstotedep_scaled = (TH1*)(h_bstotedep.Clone("h_bstotedep_scaled"));
+    // Probability density
+    // h_bstotedep_scaled->Scale(1./h_bstotedep_scaled->Integral(), "width");
+
+    // Frequency probability
+    h_bstotedep_scaled->Scale(1./h_bstotedep_scaled->Integral());
 
 	// Write Graphs
 	g_efficiency.Write(eff_graph_name);
-
+	g_bsefficiency.Write(eff_graph_name);
 	// Write Histograms
+
 	gDirectory->Write();
 	return 0;
 }

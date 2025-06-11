@@ -28,8 +28,8 @@ sub make_test_geo {
     my $slabs_difference = 0.1/2;
 
     my $lead_thickness = 0.5/2; # This is semi-length
-
-    my $flead_thickness = 5/2; # 50 mm - This is semi-length
+    #my %detector = init_det();
+    my $flead_thickness = 10/2; # 50 mm - This is semi-length
     my %detector = init_det();
     $detector{"name"} = "front_lead_block";
     $detector{"mother"} = "root";
@@ -45,7 +45,7 @@ sub make_test_geo {
     print_det(\%configuration, \%detector);
 
     my $fp_thickness = 1.5/2; # 15 mm - This is semi-length
-    my $fp_pos = $flead_thickness + $gap + $fp_thickness;
+    my $fp_zpos = $flead_thickness + $gap + $fp_thickness;
     %detector = init_det();
     $detector{"name"} = "front_plane";
     $detector{"mother"} = "root";
@@ -56,12 +56,12 @@ sub make_test_geo {
     $detector{"type"} = "Box";
     $detector{"dimensions"} = "$slab_side*cm $slab_side*cm $fp_thickness*cm";
     $detector{"material"} = "G4_Al";
-    $detector{"pos"} = "0*mm 0*mm $fp_pos*cm";
+    $detector{"pos"} = "0*mm 0*mm $fp_zpos*cm";
     #$detector{"identifiers"} = "fp1"; # Comment for now, remove comment later
     print_det(\%configuration, \%detector);
 
 
-    my $slab_zpos = $fp_pos + $fp_thickness + $gap;  # Initial slab z-pos
+    my $slab_zpos = $fp_zpos + $fp_thickness + $gap;  # Initial slab z-pos
     my $lead_zpos = $slab_zpos + $slabs_thickness2 + $gap; # Initial lead z-pos
 
     my @parts = (1..21);
@@ -84,7 +84,7 @@ sub make_test_geo {
         $detector{"pos"} = "0*mm 0*mm $slab_zpos*cm";
         $detector{"sensitivity"} = "flux";
         $detector{"hit_type"} = "flux";
-        $detector{"identifiers"} = "slab$_"; # Comment for now, remove comment later
+        $detector{"identifiers"} = "id manual $_"; # Comment for now, remove comment later
         print_det(\%configuration, \%detector);
 
 #         %detector = init_det();
@@ -144,6 +144,27 @@ sub make_test_geo {
     $detector{"material"} = "G4_Al";
     $detector{"pos"} = "0*mm 0*mm $bp_zpos*cm";
     #$detector{"identifiers"} = "bp1"; # Comment for now, remove comment later
+    print_det(\%configuration, \%detector);
+
+
+    my $bs_thickness = 10/2;
+    my $bs_sides = 6/2;
+    my $bs_height = 100/2;
+    my $bs_zpos = $bp_zpos + $fp_zpos + $gap + $bs_thickness;
+    %detector = init_det();
+    $detector{"name"} = "back_scintillator";
+    $detector{"mother"} = "root";
+    $detector{"description"} = "Back Scintillator";
+    $detector{"color"} = "26c98d";
+    $detector{"style"} = 1;
+    $detector{"visible"} = 1;
+    $detector{"type"} = "Box";
+    $detector{"dimensions"} = "$slab_side*cm $bs_height*cm $bs_thickness*cm";
+    $detector{"material"} = "scintillator";
+    $detector{"sensitivity"} = "flux";
+    $detector{"hit_type"} = "flux";
+    $detector{"pos"} = "0*mm 0*mm $bs_zpos*cm";
+    $detector{"identifiers"} = "id manual 22"; # Comment for now, remove comment later
     print_det(\%configuration, \%detector);
 
 }
